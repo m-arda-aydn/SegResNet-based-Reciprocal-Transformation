@@ -72,7 +72,7 @@ class ReciprocalTransformd(MapTransform):
         D = adc.shape[3]
         for d in range(D):
             min_data = torch.min(z_adc[:,:,:,d]).item()
-            x['image'] = adc[:,:,:,d] / (1 + abs(min_data) + z_adc[:,:,:,d])**(self.power)
+            x['image'][:,:,:,d] = adc[:,:,:,d] / (1 + abs(min_data) + z_adc[:,:,:,d])**(self.power)
 
         return x
         

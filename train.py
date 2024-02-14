@@ -14,7 +14,7 @@ from monai.transforms import (Compose,
 import numpy as np
 from monai.losses import TverskyLoss
 from monai.metrics import DiceMetric
-from monai.networks.nets import SegResNet
+from monai.networks.nets import SegResNet, AttentionUnet
 import time
 from monai.data import decollate_batch, CacheDataset
 from datetime import datetime
@@ -89,6 +89,8 @@ class ReciprocalTransform_Concatd(MapTransform):
             adc[:,:,:,d] = x['image'][:,:,:,d] / (1 + abs(min_data) + x['zmap'][:,:,:,d])**(self.power)
 
         x['image'] = torch.cat([x['image'],x['zmap'],adc],dim=0)
+        # x['image'] = torch.cat([x['image'],x['zmap']],dim=0)
+        # x['image'] = torch.cat([x['zmap'],adc],dim=0)
         return x
     
 def RemovePadding(batch_data,original_list,index):
@@ -169,6 +171,9 @@ for fold, (train_idx, val_idx) in enumerate(kf.split(train_dataset)):
                       dropout_prob=0.2,num_groups=8,norm_name='GROUP',upsample_mode='deconv').to(device)
     # model = SegResNet(spatial_dims=3,init_filters=48,in_channels=3,out_channels=1,
     #                   dropout_prob=0.2,num_groups=8,norm_name='GROUP',upsample_mode='deconv').to(device)
+
+    # model = AttentionUnet(spatial_dims=3,in_channels=3,out_channels=1,
+    #                       channels=(16, 32, 64, 128),strides=(2, 2, 2)).to(device)
     
     loss_function = TverskyLoss(smooth_nr=2e-5, sigmoid=True,smooth_dr=1e-5)
     optimizer = torch.optim.Adam(model.parameters(), learning_rate, weight_decay=weight_decay)
